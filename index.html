@@ -248,8 +248,7 @@
             </div>
         </div>
     </div>
-
-    <script>
+<script>
         const cruiseData = [
   {
     "date": "7/28/2025",
@@ -479,17 +478,56 @@
         let filteredData = [...cruiseData];
 
         function initializeApp() {
-            populateFilters(); renderOffers(); updateStats();
-            generateRecommendation(); setupEventListeners();
+            populateFilters();
+            renderOffers();
+            updateStats();
+            generateRecommendation();
+            setupEventListeners();
+        }
+
+        function parseDate(dateString) {
+            if (!dateString) return new Date();
+            if (dateString instanceof Date) return dateString;
+            
+            const dateStr = dateString.toString();
+            const mmddyyyy = dateStr.match(/^(d{1,2})/(d{1,2})/(d{4})$/);
+            if (mmddyyyy) {
+                const [, month, day, year] = mmddyyyy;
+                return new Date(year, month - 1, day);
+            }
+            
+            const parsed = new Date(dateStr);
+            if (!isNaN(parsed.getTime())) return parsed;
+            
+            console.warn('Could not parse date:', dateString);
+            return new Date();
+        }
+
+        function formatDateForDisplay(dateString) {
+            const date = parseDate(dateString);
+            if (isNaN(date.getTime())) {
+                return dateString.toString();
+            }
+            return date.toLocaleDateString('en-US', { 
+                month: 'long', 
+                day: 'numeric', 
+                year: 'numeric' 
+            });
         }
 
         function populateFilters() {
-            const dates = [...new Set(cruiseData.map(item => item.date))].sort((a, b) => new Date(b) - new Date(a));
+            const dates = [...new Set(cruiseData.map(item => item.date))];
+            const sortedDates = dates.sort((a, b) => {
+                const dateA = parseDate(a);
+                const dateB = parseDate(b);
+                return dateB - dateA;
+            });
+            
             const dateSelect = document.getElementById('dateFilter');
-            dates.forEach(date => {
+            sortedDates.forEach(date => {
                 const option = document.createElement('option');
                 option.value = date;
-                option.textContent = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                option.textContent = formatDateForDisplay(date);
                 dateSelect.appendChild(option);
             });
 
@@ -497,7 +535,8 @@
             const cruiseSelect = document.getElementById('cruiseLineFilter');
             cruiseLines.forEach(line => {
                 const option = document.createElement('option');
-                option.value = line; option.textContent = line;
+                option.value = line;
+                option.textContent = line;
                 cruiseSelect.appendChild(option);
             });
         }
@@ -525,7 +564,10 @@
                     case 'score': return b.score - a.score;
                     case 'discount': return b.maxSaving - a.maxSaving;
                     case 'brand': return a.brand.localeCompare(b.brand);
-                    case 'date': return new Date(b.date) - new Date(a.date);
+                    case 'date':
+                        const dateA = parseDate(a.date);
+                        const dateB = parseDate(b.date);
+                        return dateB - dateA;
                     default: return 0;
                 }
             });
@@ -546,13 +588,22 @@
             const card = document.createElement('div');
             card.className = `offer-card ${isBest ? 'best-offer' : ''}`;
             
-            const offerDate = new Date(offer.date + 'T00:00:00');
+            const offerDate = parseDate(offer.date);
             const isRecent = (new Date() - offerDate) <= (7 * 24 * 60 * 60 * 1000);
+            const displayDate = isNaN(offerDate.getTime()) ? 
+                offer.date : 
+                offerDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' });
             
             card.innerHTML = `
-                <div class="date-badge ${isRecent ? 'recent' : ''}">${offerDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' })}</div>
-                ${document.getElementById('showImagesToggle').checked && offer.image ? `<img src="${offer.image}" alt="${offer.brand} promotion" class="offer-image" onclick="window.open('${offer.image}', '_blank')" loading="lazy">` : ''}
-                <div class="cruise-line">${offer.brand}${isBest ? '<span class="best-badge">BEST VALUE</span>' : ''}</div>
+                <div class="date-badge ${isRecent ? 'recent' : ''}">${displayDate}</div>
+                ${document.getElementById('showImagesToggle').checked && offer.image ? 
+                    `<img src="${offer.image}" alt="${offer.brand} promotion" class="offer-image" onclick="window.open('${offer.image}', '_blank')" loading="lazy">` : 
+                    ''
+                }
+                <div class="cruise-line">
+                    ${offer.brand}
+                    ${isBest ? '<span class="best-badge">BEST VALUE</span>' : ''}
+                </div>
                 <div class="offer-details">
                     <div class="discount">${offer.discount}</div>
                     ${offer.bonuses.map(bonus => `<div class="bonus">${bonus}</div>`).join('')}
@@ -600,5 +651,7 @@
 
         document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
+ 
+   
 </body>
 </html>
