@@ -477,50 +477,7 @@
 ];
         let filteredData = [...cruiseData];
 
-        // Fixed date parsing for MM/DD/YYYY strings from Google Apps Script
-        function parseAnyDate(dateInput) {
-            if (!dateInput) return new Date();
-            if (dateInput instanceof Date) return dateInput;
-            
-            const dateStr = dateInput.toString().trim();
-            
-            // Parse MM/DD/YYYY format (what our Google Apps Script outputs)
-            const mmddyyyy = dateStr.match(/^(d{1,2})/(d{1,2})/(d{4})$/);
-            if (mmddyyyy) {
-                const [, month, day, year] = mmddyyyy;
-                return new Date(year, month - 1, day);
-            }
-            
-            // Try standard Date parsing
-            const standardParse = new Date(dateStr);
-            if (!isNaN(standardParse.getTime())) {
-                return standardParse;
-            }
-            
-            console.warn('Could not parse date, using current date:', dateInput);
-            return new Date();
-        }
-
-        function formatDateForDisplay(dateInput) {
-            const date = parseAnyDate(dateInput);
-            return date.toLocaleDateString('en-US', { 
-                month: 'long', 
-                day: 'numeric', 
-                year: 'numeric' 
-            });
-        }
-
-        function formatDateShort(dateInput) {
-            const date = parseAnyDate(dateInput);
-            return date.toLocaleDateString('en-US', { 
-                month: 'numeric', 
-                day: 'numeric', 
-                year: '2-digit' 
-            });
-        }
-
         function initializeApp() {
-            console.log('Initializing app with cruise data:', cruiseData.length, 'offers');
             populateFilters();
             renderOffers();
             updateStats();
@@ -528,16 +485,42 @@
             setupEventListeners();
         }
 
-        function populateFilters() {
-            // Get unique dates and sort them
-            const uniqueDates = [...new Set(cruiseData.map(item => item.date))];
-            console.log('Unique dates from data:', uniqueDates);
+        function parseDate(dateString) {
+            if (!dateString) return new Date();
+            if (dateString instanceof Date) return dateString;
             
-            // Sort by actual date value
-            const sortedDates = uniqueDates.sort((a, b) => {
-                const dateA = parseAnyDate(a);
-                const dateB = parseAnyDate(b);
-                return dateB - dateA; // Newest first
+            const dateStr = dateString.toString();
+            const mmddyyyy = dateStr.match(/^(d{1,2})/(d{1,2})/(d{4})$/);
+            if (mmddyyyy) {
+                const [, month, day, year] = mmddyyyy;
+                return new Date(year, month - 1, day);
+            }
+            
+            const parsed = new Date(dateStr);
+            if (!isNaN(parsed.getTime())) return parsed;
+            
+            console.warn('Could not parse date:', dateString);
+            return new Date();
+        }
+
+        function formatDateForDisplay(dateString) {
+            const date = parseDate(dateString);
+            if (isNaN(date.getTime())) {
+                return dateString.toString();
+            }
+            return date.toLocaleDateString('en-US', { 
+                month: 'long', 
+                day: 'numeric', 
+                year: 'numeric' 
+            });
+        }
+
+        function populateFilters() {
+            const dates = [...new Set(cruiseData.map(item => item.date))];
+            const sortedDates = dates.sort((a, b) => {
+                const dateA = parseDate(a);
+                const dateB = parseDate(b);
+                return dateB - dateA;
             });
             
             const dateSelect = document.getElementById('dateFilter');
@@ -545,11 +528,9 @@
                 const option = document.createElement('option');
                 option.value = date;
                 option.textContent = formatDateForDisplay(date);
-                console.log('Adding date option:', date, '?', formatDateForDisplay(date));
                 dateSelect.appendChild(option);
             });
 
-            // Populate cruise lines
             const cruiseLines = [...new Set(cruiseData.map(item => item.brand))].sort();
             const cruiseSelect = document.getElementById('cruiseLineFilter');
             cruiseLines.forEach(line => {
@@ -572,15 +553,11 @@
             const cruiseLineFilter = document.getElementById('cruiseLineFilter').value;
             const sortBy = document.getElementById('sortBy').value;
 
-            console.log('Filtering by date:', dateFilter);
-
             filteredData = cruiseData.filter(offer => {
                 const dateMatch = dateFilter === 'all' || offer.date === dateFilter;
                 const cruiseLineMatch = cruiseLineFilter === 'all' || offer.brand === cruiseLineFilter;
                 return dateMatch && cruiseLineMatch;
             });
-
-            console.log('Filtered data:', filteredData.length, 'offers');
 
             filteredData.sort((a, b) => {
                 switch(sortBy) {
@@ -588,16 +565,14 @@
                     case 'discount': return b.maxSaving - a.maxSaving;
                     case 'brand': return a.brand.localeCompare(b.brand);
                     case 'date':
-                        const dateA = parseAnyDate(a.date);
-                        const dateB = parseAnyDate(b.date);
+                        const dateA = parseDate(a.date);
+                        const dateB = parseDate(b.date);
                         return dateB - dateA;
                     default: return 0;
                 }
             });
 
-            renderOffers(); 
-            updateStats(); 
-            generateRecommendation();
+            renderOffers(); updateStats(); generateRecommendation();
         }
 
         function renderOffers() {
@@ -613,9 +588,11 @@
             const card = document.createElement('div');
             card.className = `offer-card ${isBest ? 'best-offer' : ''}`;
             
-            const offerDate = parseAnyDate(offer.date);
+            const offerDate = parseDate(offer.date);
             const isRecent = (new Date() - offerDate) <= (7 * 24 * 60 * 60 * 1000);
-            const displayDate = formatDateShort(offer.date);
+            const displayDate = isNaN(offerDate.getTime()) ? 
+                offer.date : 
+                offerDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' });
             
             card.innerHTML = `
                 <div class="date-badge ${isRecent ? 'recent' : ''}">${displayDate}</div>
@@ -673,7 +650,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', initializeApp);
-    </script> 
+    </script>
+ 
    
 </body>
 </html>
