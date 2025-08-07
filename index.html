@@ -1,247 +1,623 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Cruise Offers - Real Data Test</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cruise Offers Comparison - Professional Analysis</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .offer { border: 1px solid #ddd; margin: 10px 0; padding: 15px; border-radius: 8px; }
-        .brand { font-size: 1.3em; font-weight: bold; color: #2c3e50; }
-        .discount { background: #3498db; color: white; padding: 8px 15px; border-radius: 20px; display: inline-block; margin: 5px 0; }
-        .bonus { background: #27ae60; color: white; padding: 6px 12px; border-radius: 15px; display: inline-block; margin: 2px; font-size: 0.9em; }
-        .score { font-size: 1.2em; color: #e74c3c; font-weight: bold; }
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0; padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh; color: #2c3e50;
+        }
+        
+        .container {
+            max-width: 1600px; margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 12px; padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+        }
+        
+        h1 {
+            text-align: center; color: #2c3e50; font-size: 2.4em;
+            margin-bottom: 8px; font-weight: 700;
+        }
+        
+        .subtitle {
+            text-align: center; color: #64748b; font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+        
+        .controls {
+            display: flex; gap: 20px; margin-bottom: 30px;
+            padding: 20px; background: #f8fafc; border-radius: 12px;
+            flex-wrap: wrap; align-items: center;
+        }
+        
+        select {
+            padding: 10px 14px; border: 2px solid #e2e8f0;
+            border-radius: 8px; background: white;
+        }
+        
+        .stats-bar {
+            display: flex; gap: 20px; margin-bottom: 30px;
+            flex-wrap: wrap; justify-content: center;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+            color: white; padding: 18px 24px; border-radius: 12px;
+            text-align: center; min-width: 160px;
+        }
+        
+        .stat-number {
+            font-size: 1.9em; font-weight: 700; display: block;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em; opacity: 0.9;
+        }
+        
+        .comparison-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 24px; margin-bottom: 40px;
+        }
+        
+        .offer-card {
+            background: white; border-radius: 16px; padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0; position: relative;
+            transition: transform 0.3s ease;
+        }
+        
+        .offer-card:hover {
+            transform: translateY(-4px);
+        }
+        
+        .offer-card.best-offer {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+        }
+        
+        .offer-card.best-offer::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0;
+            height: 4px; background: #10b981;
+        }
+        
+        .date-badge {
+            position: absolute; top: 16px; right: 16px;
+            background: #6b7280; color: white;
+            padding: 6px 12px; border-radius: 20px;
+            font-size: 0.75em; font-weight: 600;
+        }
+        
+        .date-badge.recent { background: #10b981; }
+        
+        .cruise-line {
+            font-size: 1.4em; font-weight: 700; color: #1f2937;
+            margin-bottom: 16px; display: flex; align-items: center;
+            margin-top: 24px;
+        }
+        
+        .best-badge {
+            background: #10b981; color: white; padding: 6px 14px;
+            border-radius: 20px; font-size: 0.7em; margin-left: 12px;
+            font-weight: 600;
+        }
+        
+        .discount {
+            background: #3b82f6; color: white; padding: 10px 16px;
+            border-radius: 25px; display: inline-block; font-weight: 600;
+            margin: 6px 6px 6px 0; font-size: 0.9em;
+        }
+        
+        .bonus {
+            background: #10b981; color: white; padding: 7px 14px;
+            border-radius: 20px; display: inline-block;
+            margin: 6px 6px 6px 0; font-size: 0.8em;
+        }
+        
+        .deadline {
+            background: #f59e0b; color: white; padding: 7px 14px;
+            border-radius: 20px; display: inline-block;
+            margin: 6px 6px 6px 0; font-size: 0.8em;
+        }
+        
+        .value-score {
+            display: flex; align-items: center; margin-top: 18px;
+            padding: 16px; background: #f8fafc; border-radius: 12px;
+        }
+        
+        .score {
+            font-size: 1.6em; font-weight: 700; color: #dc2626;
+            margin-right: 14px;
+        }
+        
+        .offer-image {
+            width: 100%; height: 140px; object-fit: cover;
+            border-radius: 12px; margin-bottom: 18px;
+            cursor: pointer;
+        }
+        
+        .analysis {
+            margin-top: 40px; padding: 30px;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border-radius: 16px; color: white;
+        }
+        
+        .recommendation {
+            background: rgba(16, 185, 129, 0.15); padding: 24px;
+            border-radius: 12px; border-left: 4px solid #10b981;
+            margin-top: 24px;
+        }
+        
+        .recommendation h3 {
+            margin-top: 0; color: #065f46; font-weight: 700;
+        }
+        
+        @media (max-width: 768px) {
+            .comparison-grid { grid-template-columns: 1fr; }
+            .stats-bar { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
-    <h1>Cruise Offers Comparison - Real Data</h1>
-    <p>Generated at: 8/7/2025, 10:26:15 AM</p>
-    <p>Total offers: 18</p>
-    
-    <div id="offers-container">
+    <div class="container">
+        <h1>Cruise Offers Comparison</h1>
+        <div class="subtitle">
+            Professional analysis of current cruise promotions ? Updated automatically every Monday
+        </div>
         
-            <div class="offer">
-                <div class="brand">Norwegian Cruise Line</div>
-                <div class="discount">Up to $1,500 OFF</div>
-                <div>
-                    <span class="bonus">Unlimited Open Bar</span>
-                </div>
-                <div>Score: <span class="score">10/10</span></div>
-                <div>Date: 7/28/2025</div>
-                
-                <div><em>Exceptional value with highest monetary discount plus premium inclusions</em></div>
+        <div class="controls">
+            <div>
+                <label>Filter by Date:</label>
+                <select id="dateFilter">
+                    <option value="all">All Dates</option>
+                </select>
             </div>
-        
-            <div class="offer">
-                <div class="brand">Norwegian Cruise Line</div>
-                <div class="discount">Up to $1,500 OFF</div>
-                <div>
-                    <span class="bonus">Unlimited Open Bar</span>
-                </div>
-                <div>Score: <span class="score">10/10</span></div>
-                <div>Date: 8/4/2025</div>
-                <div>Deadline: ends in</div>
-                <div><em>Exceptional value with highest monetary discount plus premium inclusions</em></div>
+            <div>
+                <label>Filter by Cruise Line:</label>
+                <select id="cruiseLineFilter">
+                    <option value="all">All Cruise Lines</option>
+                </select>
             </div>
-        
-            <div class="offer">
-                <div class="brand">Princess Cruises</div>
-                <div class="discount">Up to 40% OFF</div>
-                <div>
-                    <span class="bonus">FREE 3rd & 4th Guests</span> <span class="bonus">Up to $300 Instant Savings</span>
-                </div>
-                <div>Score: <span class="score">8.9/10</span></div>
-                <div>Date: 7/28/2025</div>
-                
-                <div><em>Excellent destination focus with strong group savings</em></div>
+            <div>
+                <label>Sort by:</label>
+                <select id="sortBy">
+                    <option value="score">Value Score (Best First)</option>
+                    <option value="discount">Discount Amount</option>
+                    <option value="brand">Cruise Line (A-Z)</option>
+                    <option value="date">Date (Newest First)</option>
+                </select>
             </div>
-        
-            <div class="offer">
-                <div class="brand">Princess Cruises</div>
-                <div class="discount">Up to 40% OFF</div>
-                <div>
-                    <span class="bonus">FREE 3rd & 4th Guests</span> <span class="bonus">Up to $400 Instant Savings</span>
-                </div>
-                <div>Score: <span class="score">8.9/10</span></div>
-                <div>Date: 8/4/2025</div>
-                <div>Deadline: ends in</div>
-                <div><em>Excellent destination focus with strong group savings</em></div>
+            <div>
+                <label>
+                    <input type="checkbox" id="showImages" checked>
+                    Show Images
+                </label>
             </div>
+        </div>
         
-            <div class="offer">
-                <div class="brand">Carnival</div>
-                <div class="discount">Up to 50% OFF</div>
-                <div>
-                    <span class="bonus">Reduced Deposit</span>
-                </div>
-                <div>Score: <span class="score">8.8/10</span></div>
-                <div>Date: 7/28/2025</div>
-                <div>Deadline: ends thursday, july 31st</div>
-                <div><em>Budget-friendly with excellent booking flexibility and family perks</em></div>
+        <div class="stats-bar">
+            <div class="stat-card">
+                <span class="stat-number" id="totalOffers">0</span>
+                <span class="stat-label">Total Offers</span>
             </div>
-        
-            <div class="offer">
-                <div class="brand">Viking Cruises</div>
-                <div class="discount">FREE Airfare</div>
-                <div>
-                    
-                </div>
-                <div>Score: <span class="score">8.4/10</span></div>
-                <div>Date: 7/28/2025</div>
-                <div>Deadline: only 3 days left</div>
-                <div><em>Premium river/ocean cruises with comprehensive inclusions</em></div>
+            <div class="stat-card">
+                <span class="stat-number" id="avgScore">0</span>
+                <span class="stat-label">Average Score</span>
             </div>
-        
-            <div class="offer">
-                <div class="brand">Viking Cruises</div>
-                <div class="discount">FREE Airfare</div>
-                <div>
-                    
-                </div>
-                <div>Score: <span class="score">8.2/10</span></div>
-                <div>Date: 8/4/2025</div>
-                <div>Deadline: expires august 31, 2025</div>
-                <div><em>Premium river/ocean cruises with comprehensive inclusions</em></div>
+            <div class="stat-card">
+                <span class="stat-number" id="topSaving">$0</span>
+                <span class="stat-label">Highest Saving</span>
             </div>
-        
-            <div class="offer">
-                <div class="brand">Holland America</div>
-                <div class="discount">Up to 40% OFF</div>
-                <div>
-                    <span class="bonus">Reduced Deposit</span>
-                </div>
-                <div>Score: <span class="score">8/10</span></div>
-                <div>Date: 7/28/2025</div>
-                <div>Deadline: ends soon
- 
-thursday, july 31, 2025
-exquisite service, room to breathe, and a journey refreshingly free of overcrowded beaches </div>
-                <div><em>Premium experience with great family value and multiple inclusions</em></div>
+            <div class="stat-card">
+                <span class="stat-number" id="activeLines">0</span>
+                <span class="stat-label">Active Lines</span>
             </div>
+        </div>
         
-            <div class="offer">
-                <div class="brand">Holland America</div>
-                <div class="discount">Up to 40% OFF</div>
-                <div>
-                    
-                </div>
-                <div>Score: <span class="score">8/10</span></div>
-                <div>Date: 8/4/2025</div>
-                
-                <div><em>Premium experience with great family value and multiple inclusions</em></div>
+        <div class="comparison-grid" id="offersGrid"></div>
+        
+        <div class="analysis">
+            <h2>Market Analysis & Recommendations</h2>
+            <div class="recommendation">
+                <h3>? Current Best Deal</h3>
+                <div id="bestDeal"></div>
             </div>
-        
-            <div class="offer">
-                <div class="brand">MSC Cruises</div>
-                <div class="discount">Up to 30% OFF</div>
-                <div>
-                    <span class="bonus">Kids Sail FREE</span>
-                </div>
-                <div>Score: <span class="score">7.5/10</span></div>
-                <div>Date: 7/28/2025</div>
-                
-                <div><em>Good family value with European flair</em></div>
-            </div>
-        
-            <div class="offer">
-                <div class="brand">Royal Caribbean</div>
-                <div class="discount">Up to $750 OFF</div>
-                <div>
-                    
-                </div>
-                <div>Score: <span class="score">7.5/10</span></div>
-                <div>Date: 7/28/2025</div>
-                
-                <div><em>Solid savings with brand reliability and innovation</em></div>
-            </div>
-        
-            <div class="offer">
-                <div class="brand">MSC Cruises</div>
-                <div class="discount">Up to 30% OFF</div>
-                <div>
-                    <span class="bonus">Kids Sail FREE</span>
-                </div>
-                <div>Score: <span class="score">7.5/10</span></div>
-                <div>Date: 8/4/2025</div>
-                <div>Deadline: ends in</div>
-                <div><em>Good family value with European flair</em></div>
-            </div>
-        
-            <div class="offer">
-                <div class="brand">Royal Caribbean</div>
-                <div class="discount">Up to $800 OFF</div>
-                <div>
-                    
-                </div>
-                <div>Score: <span class="score">7.5/10</span></div>
-                <div>Date: 8/4/2025</div>
-                <div>Deadline: ends in</div>
-                <div><em>Solid savings with brand reliability and innovation</em></div>
-            </div>
-        
-            <div class="offer">
-                <div class="brand">Virgin Voyages</div>
-                <div class="discount">70% OFF Second Guest</div>
-                <div>
-                    <span class="bonus">FREE Balcony Upgrades</span> <span class="bonus">Up to $300 Onboard Credit</span>
-                </div>
-                <div>Score: <span class="score">6.1/10</span></div>
-                <div>Date: 8/4/2025</div>
-                
-                <div><em>Adult-only modern cruising experience</em></div>
-            </div>
-        
-            <div class="offer">
-                <div class="brand">Celebrity Cruises</div>
-                <div class="discount"></div>
-                <div>
-                    <span class="bonus">FREE 3rd & 4th Guests</span> <span class="bonus">Up to $500 Onboard Credit</span>
-                </div>
-                <div>Score: <span class="score">5.8/10</span></div>
-                <div>Date: 7/28/2025</div>
-                
-                <div><em>Luxury cruise experience with premium amenities</em></div>
-            </div>
-        
-            <div class="offer">
-                <div class="brand">Virgin Voyages</div>
-                <div class="discount">70% OFF Second Guest</div>
-                <div>
-                    <span class="bonus">FREE Balcony Upgrades</span>
-                </div>
-                <div>Score: <span class="score">5.8/10</span></div>
-                <div>Date: 7/28/2025</div>
-                
-                <div><em>Adult-only modern cruising experience</em></div>
-            </div>
-        
-            <div class="offer">
-                <div class="brand">Carnival</div>
-                <div class="discount">$50 Down Payment</div>
-                <div>
-                    
-                </div>
-                <div>Score: <span class="score">5/10</span></div>
-                <div>Date: 8/4/2025</div>
-                
-                <div><em>Budget-friendly with excellent booking flexibility and family perks</em></div>
-            </div>
-        
-            <div class="offer">
-                <div class="brand">Celebrity Cruises</div>
-                <div class="discount"></div>
-                <div>
-                    
-                </div>
-                <div>Score: <span class="score">5/10</span></div>
-                <div>Date: 8/4/2025</div>
-                <div>Deadline: ends in</div>
-                <div><em>Luxury cruise experience with premium amenities</em></div>
-            </div>
-        
+        </div>
     </div>
-    
+
     <script>
-        console.log('Page loaded successfully');
-        console.log('Offers found:', 18);
+        // Cruise data embedded directly
+        const cruiseData = [
+  {
+    "date": "7/28/2025",
+    "brand": "Norwegian Cruise Line",
+    "image": "https://drive.google.com/uc?export=view&id=1jeXBeWER3u9H68MMKItKvzbPGd_DzHNf",
+    "discount": "Up to $1,500 OFF",
+    "bonuses": [
+      "Unlimited Open Bar"
+    ],
+    "deadline": "",
+    "score": 10,
+    "maxSaving": 1500,
+    "summary": "Exceptional value with highest monetary discount plus premium inclusions"
+  },
+  {
+    "date": "8/4/2025",
+    "brand": "Norwegian Cruise Line",
+    "image": "https://drive.google.com/uc?export=view&id=1iAdxyGnn9GibD1CPlQVi-r09W3ClugpJ",
+    "discount": "Up to $1,500 OFF",
+    "bonuses": [
+      "Unlimited Open Bar"
+    ],
+    "deadline": "ends in",
+    "score": 10,
+    "maxSaving": 1500,
+    "summary": "Exceptional value with highest monetary discount plus premium inclusions"
+  },
+  {
+    "date": "7/28/2025",
+    "brand": "Princess Cruises",
+    "image": "https://drive.google.com/uc?export=view&id=19KbPOijhYZTMTcswBfOkUtvsXtbAxjez",
+    "discount": "Up to 40% OFF",
+    "bonuses": [
+      "FREE 3rd & 4th Guests",
+      "Up to $300 Instant Savings"
+    ],
+    "deadline": "",
+    "score": 8.9,
+    "maxSaving": 300,
+    "summary": "Excellent destination focus with strong group savings"
+  },
+  {
+    "date": "8/4/2025",
+    "brand": "Princess Cruises",
+    "image": "https://drive.google.com/uc?export=view&id=10rx2xm-qjqBUghMtrNabRWVTzf1lHOCQ",
+    "discount": "Up to 40% OFF",
+    "bonuses": [
+      "FREE 3rd & 4th Guests",
+      "Up to $400 Instant Savings"
+    ],
+    "deadline": "ends in",
+    "score": 8.9,
+    "maxSaving": 400,
+    "summary": "Excellent destination focus with strong group savings"
+  },
+  {
+    "date": "7/28/2025",
+    "brand": "Carnival",
+    "image": "https://drive.google.com/uc?export=view&id=1Xkgj6THKXXOrNoaTOyZm6Gu4U-QfrGGs",
+    "discount": "Up to 50% OFF",
+    "bonuses": [
+      "Reduced Deposit"
+    ],
+    "deadline": "ends thursday, july 31st",
+    "score": 8.8,
+    "maxSaving": 0,
+    "summary": "Budget-friendly with excellent booking flexibility and family perks"
+  },
+  {
+    "date": "7/28/2025",
+    "brand": "Viking Cruises",
+    "image": "https://drive.google.com/uc?export=view&id=11uQWVxbTpkx0gQ7qpUP48Jq3upeD4Lpf",
+    "discount": "FREE Airfare",
+    "bonuses": [],
+    "deadline": "only 3 days left",
+    "score": 8.4,
+    "maxSaving": 0,
+    "summary": "Premium river/ocean cruises with comprehensive inclusions"
+  },
+  {
+    "date": "8/4/2025",
+    "brand": "Viking Cruises",
+    "image": "https://drive.google.com/uc?export=view&id=1rBXG4GmyHCNje61IgZEIYmbZ5B8V2RFA",
+    "discount": "FREE Airfare",
+    "bonuses": [],
+    "deadline": "expires august 31, 2025",
+    "score": 8.2,
+    "maxSaving": 0,
+    "summary": "Premium river/ocean cruises with comprehensive inclusions"
+  },
+  {
+    "date": "7/28/2025",
+    "brand": "Holland America",
+    "image": "https://drive.google.com/uc?export=view&id=1H8O_uvIwa6lHSVMkr4ACOLIB76Gpgr6L",
+    "discount": "Up to 40% OFF",
+    "bonuses": [
+      "Reduced Deposit"
+    ],
+    "deadline": "ends soon\n \nthursday, july 31, 2025\nexquisite service, room to breathe, and a journey refreshingly free of overcrowded beaches ",
+    "score": 8,
+    "maxSaving": 0,
+    "summary": "Premium experience with great family value and multiple inclusions"
+  },
+  {
+    "date": "8/4/2025",
+    "brand": "Holland America",
+    "image": "https://drive.google.com/uc?export=view&id=1TvMjwHueSahaW21vk1Q6tu_uHsTllVsS",
+    "discount": "Up to 40% OFF",
+    "bonuses": [],
+    "deadline": "",
+    "score": 8,
+    "maxSaving": 0,
+    "summary": "Premium experience with great family value and multiple inclusions"
+  },
+  {
+    "date": "7/28/2025",
+    "brand": "MSC Cruises",
+    "image": "https://drive.google.com/uc?export=view&id=1hpSnodASg_y_qenGuImnn7DGBfwM3-Oh",
+    "discount": "Up to 30% OFF",
+    "bonuses": [
+      "Kids Sail FREE"
+    ],
+    "deadline": "",
+    "score": 7.5,
+    "maxSaving": 0,
+    "summary": "Good family value with European flair"
+  },
+  {
+    "date": "7/28/2025",
+    "brand": "Royal Caribbean",
+    "image": "https://drive.google.com/uc?export=view&id=1IqmNsXSLaLxuV4aRiZQ-7dFzu_sNTrr7",
+    "discount": "Up to $750 OFF",
+    "bonuses": [],
+    "deadline": "",
+    "score": 7.5,
+    "maxSaving": 750,
+    "summary": "Solid savings with brand reliability and innovation"
+  },
+  {
+    "date": "8/4/2025",
+    "brand": "MSC Cruises",
+    "image": "https://drive.google.com/uc?export=view&id=1AcE_ASixjOKbbZpRHpnF0TIPz-anpS2i",
+    "discount": "Up to 30% OFF",
+    "bonuses": [
+      "Kids Sail FREE"
+    ],
+    "deadline": "ends in",
+    "score": 7.5,
+    "maxSaving": 0,
+    "summary": "Good family value with European flair"
+  },
+  {
+    "date": "8/4/2025",
+    "brand": "Royal Caribbean",
+    "image": "https://drive.google.com/uc?export=view&id=1s5jNFhk-nf2YRlZPiE1CtaiHi_D3Md-V",
+    "discount": "Up to $800 OFF",
+    "bonuses": [],
+    "deadline": "ends in",
+    "score": 7.5,
+    "maxSaving": 800,
+    "summary": "Solid savings with brand reliability and innovation"
+  },
+  {
+    "date": "8/4/2025",
+    "brand": "Virgin Voyages",
+    "image": "https://drive.google.com/uc?export=view&id=1DiBKGeDBDdkxpX3EpCKgkDt9eskOikjI",
+    "discount": "70% OFF Second Guest",
+    "bonuses": [
+      "FREE Balcony Upgrades",
+      "Up to $300 Onboard Credit"
+    ],
+    "deadline": "",
+    "score": 6.1,
+    "maxSaving": 300,
+    "summary": "Adult-only modern cruising experience"
+  },
+  {
+    "date": "7/28/2025",
+    "brand": "Celebrity Cruises",
+    "image": "https://drive.google.com/uc?export=view&id=1u9r5EVCMw5H3m7_6ujX0IgmUtigY3J4T",
+    "discount": "",
+    "bonuses": [
+      "FREE 3rd & 4th Guests",
+      "Up to $500 Onboard Credit"
+    ],
+    "deadline": "",
+    "score": 5.8,
+    "maxSaving": 500,
+    "summary": "Luxury cruise experience with premium amenities"
+  },
+  {
+    "date": "7/28/2025",
+    "brand": "Virgin Voyages",
+    "image": "https://drive.google.com/uc?export=view&id=1Yk1x_VekKLYh1ra1IP1HdXi7R6SuAInU",
+    "discount": "70% OFF Second Guest",
+    "bonuses": [
+      "FREE Balcony Upgrades"
+    ],
+    "deadline": "",
+    "score": 5.8,
+    "maxSaving": 0,
+    "summary": "Adult-only modern cruising experience"
+  },
+  {
+    "date": "8/4/2025",
+    "brand": "Carnival",
+    "image": "https://drive.google.com/uc?export=view&id=1XqHLYnn77HePWIk4CkkNG6M8OgEiJQ0E",
+    "discount": "$50 Down Payment",
+    "bonuses": [],
+    "deadline": "",
+    "score": 5,
+    "maxSaving": 0,
+    "summary": "Budget-friendly with excellent booking flexibility and family perks"
+  },
+  {
+    "date": "8/4/2025",
+    "brand": "Celebrity Cruises",
+    "image": "https://drive.google.com/uc?export=view&id=1SiYC2XWP_Uz23hWw-ppcQ8o7HBnsTa7I",
+    "discount": "",
+    "bonuses": [],
+    "deadline": "ends in",
+    "score": 5,
+    "maxSaving": 0,
+    "summary": "Luxury cruise experience with premium amenities"
+  }
+];
+        let filteredData = [...cruiseData];
+
+        console.log('Cruise data loaded:', cruiseData.length, 'offers');
+
+        function initApp() {
+            console.log('Initializing app...');
+            populateFilters();
+            renderOffers();
+            updateStats();
+            showBestDeal();
+            setupListeners();
+        }
+
+        function populateFilters() {
+            // Date filter
+            const dates = [...new Set(cruiseData.map(item => item.date))];
+            const dateSelect = document.getElementById('dateFilter');
+            dates.forEach(date => {
+                const option = document.createElement('option');
+                option.value = date;
+                option.textContent = formatDate(date);
+                dateSelect.appendChild(option);
+            });
+
+            // Cruise line filter
+            const brands = [...new Set(cruiseData.map(item => item.brand))].sort();
+            const brandSelect = document.getElementById('cruiseLineFilter');
+            brands.forEach(brand => {
+                const option = document.createElement('option');
+                option.value = brand;
+                option.textContent = brand;
+                brandSelect.appendChild(option);
+            });
+        }
+
+        function formatDate(dateStr) {
+            try {
+                const parts = dateStr.split('/');
+                if (parts.length === 3) {
+                    const date = new Date(parts[2], parts[0] - 1, parts[1]);
+                    return date.toLocaleDateString('en-US', { 
+                        month: 'long', 
+                        day: 'numeric', 
+                        year: 'numeric' 
+                    });
+                }
+                return dateStr;
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        function setupListeners() {
+            document.getElementById('dateFilter').addEventListener('change', filterAndRender);
+            document.getElementById('cruiseLineFilter').addEventListener('change', filterAndRender);
+            document.getElementById('sortBy').addEventListener('change', filterAndRender);
+            document.getElementById('showImages').addEventListener('change', renderOffers);
+        }
+
+        function filterAndRender() {
+            const dateFilter = document.getElementById('dateFilter').value;
+            const brandFilter = document.getElementById('cruiseLineFilter').value;
+            const sortBy = document.getElementById('sortBy').value;
+
+            filteredData = cruiseData.filter(offer => {
+                const dateMatch = dateFilter === 'all' || offer.date === dateFilter;
+                const brandMatch = brandFilter === 'all' || offer.brand === brandFilter;
+                return dateMatch && brandMatch;
+            });
+
+            // Sort
+            filteredData.sort((a, b) => {
+                switch(sortBy) {
+                    case 'score': return b.score - a.score;
+                    case 'discount': return b.maxSaving - a.maxSaving;
+                    case 'brand': return a.brand.localeCompare(b.brand);
+                    case 'date': return new Date(b.date) - new Date(a.date);
+                    default: return 0;
+                }
+            });
+
+            renderOffers();
+            updateStats();
+            showBestDeal();
+        }
+
+        function renderOffers() {
+            const grid = document.getElementById('offersGrid');
+            const showImages = document.getElementById('showImages').checked;
+            
+            grid.innerHTML = '';
+            
+            filteredData.forEach((offer, index) => {
+                const card = document.createElement('div');
+                card.className = 'offer-card' + (index === 0 ? ' best-offer' : '');
+                
+                const isRecent = new Date() - new Date(offer.date) < 7 * 24 * 60 * 60 * 1000;
+                
+                card.innerHTML = 
+                    '<div class="date-badge' + (isRecent ? ' recent' : '') + '">' + offer.date + '</div>' +
+                    (showImages && offer.image ? '<img src="' + offer.image + '" class="offer-image" onclick="window.open('' + offer.image + '', '_blank')">' : '') +
+                    '<div class="cruise-line">' + offer.brand + (index === 0 ? '<span class="best-badge">BEST VALUE</span>' : '') + '</div>' +
+                    '<div><div class="discount">' + offer.discount + '</div>' +
+                    offer.bonuses.map(bonus => '<span class="bonus">' + bonus + '</span>').join('') +
+                    (offer.deadline ? '<div class="deadline">' + offer.deadline + '</div>' : '') + '</div>' +
+                    '<div class="value-score"><span class="score">' + offer.score + '/10</span><span>' + offer.summary + '</span></div>';
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function updateStats() {
+            document.getElementById('totalOffers').textContent = filteredData.length;
+            
+            if (filteredData.length > 0) {
+                const avgScore = filteredData.reduce((sum, offer) => sum + offer.score, 0) / filteredData.length;
+                document.getElementById('avgScore').textContent = avgScore.toFixed(1) + '/10';
+                
+                const topSaving = Math.max(...filteredData.map(offer => offer.maxSaving || 0));
+                document.getElementById('topSaving').textContent = topSaving > 0 ? '$' + topSaving.toLocaleString() : 'Varies';
+                
+                const uniqueLines = new Set(filteredData.map(offer => offer.brand)).size;
+                document.getElementById('activeLines').textContent = uniqueLines;
+            } else {
+                document.getElementById('avgScore').textContent = '0/10';
+                document.getElementById('topSaving').textContent = '$0';
+                document.getElementById('activeLines').textContent = '0';
+            }
+        }
+
+        function showBestDeal() {
+            const bestDealDiv = document.getElementById('bestDeal');
+            if (filteredData.length === 0) {
+                bestDealDiv.innerHTML = '<p>No offers match your filters.</p>';
+                return;
+            }
+            
+            const best = filteredData[0];
+            bestDealDiv.innerHTML = 
+                '<p><strong>' + best.brand + '</strong> offers the best value with a score of <strong>' + best.score + '/10</strong>.</p>' +
+                '<p><strong>Key Benefits:</strong> ' + best.discount + (best.bonuses.length > 0 ? ' + ' + best.bonuses.slice(0, 2).join(' + ') : '') + '</p>' +
+                '<p><strong>Analysis:</strong> ' + best.summary + '</p>' +
+                (best.deadline ? '<p><strong>? Deadline:</strong> ' + best.deadline + '</p>' : '');
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing...');
+            initApp();
+        });
+        
+        // Backup initialization
+        window.addEventListener('load', function() {
+            console.log('Window loaded, backup init...');
+            if (document.getElementById('totalOffers').textContent === '0') {
+                initApp();
+            }
+        });
     </script>
 </body>
 </html>
